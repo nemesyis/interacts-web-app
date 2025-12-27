@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class LoginController extends Controller
 {
@@ -47,15 +49,30 @@ class LoginController extends Controller
     /**
      * Get the needed authorization credentials from the request.
      */
-    protected function credentials(Request $request)
+        protected function credentials(Request $request)
     {
         $login = $request->input('login');
         $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
         
         return [
             $field => $login,
-            'password' => $request->input('password'),
+            'password_hash' => $request->input('password'),  // Change this line
         ];
+    }
+
+        protected function attemptLogin(Request $request)
+    {
+        $login = $request->input('login');
+        $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        
+        $user = User::where($field, $login)->first();
+        
+        if ($user && Hash::check($request->input('password'), $user->password_hash)) {
+            Auth::login($user, $request->filled('remember'));
+            return true;
+        }
+        
+        return false;
     }
 
     /**

@@ -59,9 +59,20 @@ class User extends Authenticatable
     $this->attributes['password_hash'] = $value;
     }
 
+    /**
+     * Get the password for authentication
+     */
     public function getAuthPassword()
     {
         return $this->password_hash;
+    }
+
+    /**
+     * Get the column name for the "password"
+     */
+    public function getAuthPasswordName()
+    {
+        return 'password_hash';
     }
 
     /**
