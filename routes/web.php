@@ -67,10 +67,12 @@ Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')
     Route::get('/classrooms/{id}/appointments', [TeacherController::class, 'appointments'])->name('appointments');
     Route::get('/classrooms/{id}/appointments/create', [TeacherController::class, 'createAppointment'])->name('appointments.create');
     Route::post('/classrooms/{id}/appointments', [TeacherController::class, 'storeAppointment'])->name('appointments.store');
+    Route::post('/appointments/{id}/toggle', [TeacherController::class, 'toggleAppointment'])->name('appointments.toggle');
     
     // Materials
     Route::get('/appointments/{id}/materials', [TeacherController::class, 'materials'])->name('materials');
     Route::post('/appointments/{id}/materials', [TeacherController::class, 'storeMaterial'])->name('materials.store');
+    Route::delete('/materials/{id}', [TeacherController::class, 'deleteMaterial'])->name('materials.delete');
     
     // Quizzes
     Route::get('/appointments/{id}/quiz', [TeacherController::class, 'createQuiz'])->name('quiz.create');
