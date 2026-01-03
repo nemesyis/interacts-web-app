@@ -58,6 +58,7 @@
                                 <th>Scheduled</th>
                                 <th>Duration</th>
                                 <th>Materials</th>
+                                <th>Projects</th>
                                 <th>Quiz</th>
                                 <th>Report</th>
                                 <th>Status</th>
