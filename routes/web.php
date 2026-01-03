@@ -82,6 +82,11 @@ Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')
     Route::get('/appointments/{id}/report', [TeacherController::class, 'viewReport'])->name('report.view');
     Route::post('/appointments/{id}/report', [TeacherController::class, 'createReport'])->name('report.create');
     Route::put('/appointments/{id}/report', [TeacherController::class, 'updateReport'])->name('report.update');
+
+    // Projects
+    Route::get('/appointments/{id}/projects', [TeacherController::class, 'projects'])->name('projects');
+    Route::post('/appointments/{id}/projects', [TeacherController::class, 'storeProject'])->name('projects.store');
+    Route::delete('/projects/{id}', [TeacherController::class, 'deleteProject'])->name('projects.delete');
 });
 
 /*
