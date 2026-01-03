@@ -178,10 +178,14 @@ class TeacherController extends Controller
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
                 $filename = time() . '_' . $file->getClientOriginalName();
-                $path = $file->storeAs('public/materials', $filename);
-                $fileUrl = Storage::url($path);
+
+                $file->move(public_path('materials'), $filename);
+
+                $fileUrl = '/materials/' . $filename;
+                }
+
             }
-        }
+        
 
         $nextOrder = Material::where('appointment_id', $id)->max('order_number') + 1;
 
@@ -209,9 +213,11 @@ class TeacherController extends Controller
 
         // Delete file if not a link
         if ($material->material_type != 'link' && $material->file_url) {
-            $path = str_replace('/storage/', 'public/', $material->file_url);
-            Storage::delete($path);
-        }
+            $filePath = public_path($material->file_url);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+                }
+            }
 
         $appointmentId = $material->appointment_id;
         $material->delete();
