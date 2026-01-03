@@ -89,6 +89,11 @@
                                         </a>
                                     </td>
                                     <td>
+                                        <a href="{{ route('teacher.projects', $appointment->appointment_id) }}" class="btn btn-sm btn-outline-warning">
+                                            <i class="bi bi-briefcase"></i> Projects
+                                        </a>
+                                    </td>
+                                    <td>
                                         @if($appointment->quiz)
                                             <span class="badge bg-success"><i class="bi bi-check-circle"></i> Created</span>
                                         @else
