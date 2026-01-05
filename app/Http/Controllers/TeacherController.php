@@ -304,9 +304,9 @@ class TeacherController extends Controller
      */
     public function createReport(Request $request, $id)
     {
-        $appointment = Appointment::whereHas('classroom', function($query) {
-            $query->where('teacher_id', auth()->id());
-        })->firstOrFail($id);
+        $appointment = Appointment::whereHas('classroom', function ($query) {
+        $query->where('teacher_id', auth()->id());
+        })->findOrFail($id);
 
         $request->validate([
             'report_title' => 'required|string|max:200',
