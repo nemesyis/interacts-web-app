@@ -11,6 +11,7 @@ class QuizQuestion extends Model
 {
     protected $table = 'tb_quiz_question';
     protected $primaryKey = 'question_id';
+    public $timestamps = false;
 
     protected $fillable = [
         'quiz_id',

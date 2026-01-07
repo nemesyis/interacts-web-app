@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Project;
 use App\Models\ProjectSubmission;
+use App\Models\QuizQuestion;
 
 class TeacherController extends Controller
 {
@@ -252,8 +253,51 @@ class TeacherController extends Controller
      */
     public function storeQuiz(Request $request, $id)
     {
-        // This will be implemented when we build the quiz system
-        return redirect()->back()->with('info', 'Quiz creation coming soon!');
+        $appointment = Appointment::whereHas('classroom', function($query) {
+            $query->where('teacher_id', auth()->id());
+        })->findOrFail($id);
+
+        $request->validate([
+            'quiz_title' => 'required|string|max:200',
+            'description' => 'nullable|string',
+            'time_limit_minutes' => 'nullable|integer|min:1|max:180',
+            'passing_score' => 'nullable|numeric|min:0',
+            'questions' => 'required|array|min:1',
+            'questions.*.type' => 'required|in:multiple_choice,true_false,short_answer',
+            'questions.*.text' => 'required|string',
+            'questions.*.points' => 'required|numeric|min:0.01',
+            'questions.*.answer' => 'required|string',
+            'questions.*.options' => 'nullable|array',
+        ], [
+            'questions.required' => 'Please add at least one question.',
+            'questions.min' => 'Please add at least one question.',
+        ]);
+
+        // Create quiz
+        $quiz = Quiz::create([
+            'appointment_id' => $id,
+            'quiz_title' => $request->quiz_title,
+            'description' => $request->description,
+            'time_limit_minutes' => $request->time_limit_minutes,
+            'passing_score' => $request->passing_score,
+            'is_active' => true,
+        ]);
+
+        // Create questions
+        foreach ($request->questions as $index => $questionData) {
+            QuizQuestion::create([
+                'quiz_id' => $quiz->quiz_id,
+                'question_text' => $questionData['text'],
+                'question_type' => $questionData['type'],
+                'points' => $questionData['points'],
+                'correct_answer' => $questionData['answer'],
+                'options' => $questionData['type'] === 'multiple_choice' ? $questionData['options'] : null,
+                'order_number' => $index + 1,
+            ]);
+        }
+
+        return redirect()->route('teacher.appointments', $appointment->classroom_id)
+            ->with('success', 'Quiz created successfully with ' . count($request->questions) . ' questions!');
     }
 
     /**
@@ -332,74 +376,6 @@ class TeacherController extends Controller
     public function updateReport(Request $request, $id)
     {
         return $this->createReport($request, $id);
-    }
-
-    /**
-     * Show projects for an appointment
-     */
-    public function projects($id)
-    {
-        $appointment = Appointment::whereHas('classroom', function($query) {
-            $query->where('teacher_id', auth()->id());
-        })->with('classroom')->findOrFail($id);
-
-        $projects = Project::where('appointment_id', $id)
-            ->withCount('submissions')
-            ->orderBy('created_at')
-            ->get();
-
-        return view('teacher.projects.index', compact('appointment', 'projects'));
-    }
-
-    /**
-     * Store new project
-     */
-    public function storeProject(Request $request, $id)
-    {
-        $appointment = Appointment::whereHas('classroom', function($query) {
-            $query->where('teacher_id', auth()->id());
-        })->findOrFail($id);
-
-        $request->validate([
-            'project_title' => 'required|string|max:200',
-            'description' => 'nullable|string',
-            'due_date' => 'nullable|date',
-        ]);
-
-        Project::create([
-            'appointment_id' => $id,
-            'project_title' => $request->project_title,
-            'description' => $request->description,
-            'due_date' => $request->due_date,
-            'is_active' => true,
-        ]);
-
-        return redirect()->route('teacher.projects', $id)
-            ->with('success', 'Project created successfully!');
-    }
-
-    /**
-     * Delete project
-     */
-    public function deleteProject($id)
-    {
-        $project = Project::whereHas('appointment.classroom', function($query) {
-            $query->where('teacher_id', auth()->id());
-        })->findOrFail($id);
-
-        // Delete all submission files
-        foreach ($project->submissions as $submission) {
-            $filePath = public_path($submission->file_url);
-            if (file_exists($filePath)) {
-                unlink($filePath);
-            }
-        }
-
-        $appointmentId = $project->appointment_id;
-        $project->delete();
-
-        return redirect()->route('teacher.projects', $appointmentId)
-            ->with('success', 'Project and all submissions deleted successfully!');
     }
 
     /**
