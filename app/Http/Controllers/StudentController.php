@@ -317,6 +317,7 @@ class StudentController extends Controller
 
         // Upload file
         $file = $request->file('file');
+        $fileSize = $file->getSize();
         $filename = time() . '_' . auth()->id() . '_' . $file->getClientOriginalName();
         $file->move(public_path('projects'), $filename);
 
@@ -326,7 +327,7 @@ class StudentController extends Controller
             'student_id' => auth()->id(),
             'file_url' => '/projects/' . $filename,
             'file_name' => $file->getClientOriginalName(),
-            'file_size' => $file->getSize(),
+            'file_size' => $fileSize,
             'submission_note' => $request->submission_note,
         ]);
 
@@ -385,5 +386,22 @@ class StudentController extends Controller
             ->keyBy('student_id');
 
         return view('student.report', compact('appointment', 'students', 'quizAttempts', 'projectSubmissions', 'attendance'));
+    }
+
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (auth()->check() && auth()->user()->role === 'student') {
+                $enrollments = Enrollment::where('student_id', auth()->id())
+                    ->where('status', 'active')
+                    ->with('classroom')
+                    ->latest()
+                    ->get();
+                
+                view()->share('enrollments', $enrollments);
+            }
+            
+            return $next($request);
+        });
     }
 }

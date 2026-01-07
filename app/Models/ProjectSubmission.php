@@ -11,6 +11,7 @@ class ProjectSubmission extends Model
 {
     protected $table = 'tb_project_submission';
     protected $primaryKey = 'submission_id';
+    public $timestamps = false;
 
     protected $fillable = [
         'project_id',
