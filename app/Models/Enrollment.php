@@ -8,6 +8,7 @@ class Enrollment extends Model
 {
     protected $table = 'tb_enrollment';
     protected $primaryKey = 'enrollment_id';
+    public $timestamps = false;
 
     protected $fillable = [
         'classroom_id',
