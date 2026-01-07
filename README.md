@@ -1,3 +1,14 @@
+## How to use this program?
+REQUIREMENTS:   PHP 8.4.3
+                APACHE 2.4.65
+                Laravel 12
+                Composer 2.9.3
+                Laragon (Optional)
+Step 1, import the database file inside the DB foler into your MySQL
+Step 2, configure the .env.example according to your credentials
+Step 3, run the program
+Additional step, if you're using Laragon, don't forget to configure interacts-web-app.conf file in the \laragon\etc\apache2\sites-enabled. This way you can access the web using this URL http://interacts-web-app.test/
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
