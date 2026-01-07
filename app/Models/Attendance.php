@@ -11,6 +11,7 @@ class Attendance extends Model
 {
     protected $table = 'tb_attendance';
     protected $primaryKey = 'attendance_id';
+    public $timestamps = false;
 
     protected $fillable = [
         'appointment_id',
