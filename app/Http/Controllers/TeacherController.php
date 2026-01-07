@@ -401,4 +401,22 @@ class TeacherController extends Controller
         return redirect()->route('teacher.projects', $appointmentId)
             ->with('success', 'Project and all submissions deleted successfully!');
     }
+
+    /**
+     * FIXXED Dashboard middleware to share classrooms
+     */
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (auth()->check() && auth()->user()->role === 'teacher') {
+                $classrooms = \App\Models\Classroom::where('teacher_id', auth()->id())
+                    ->latest()
+                    ->get();
+                
+                view()->share('classrooms', $classrooms);
+            }
+            
+            return $next($request);
+        });
+    }
 }
