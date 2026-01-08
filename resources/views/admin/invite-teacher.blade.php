@@ -108,13 +108,14 @@
                                             <td>{{ $invitation->teacher_email }}</td>
                                             <td><code>{{ $invitation->teacher_username }}</code></td>
                                             <td>
-                                                @if(session('invitation_link'))
-                                                    <div class="alert alert-info alert-dismissible fade show m-4 mb-0" role="alert">
-                                                        <h5 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Invitation Link</h5>
-                                                        <p class="mb-2">Share this link with the teacher:</p>
-                                                        <code>{{ session('invitation_link') }}</code>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                                    </div>
+                                                @if($invitation->status === 'pending' || $invitation->status === 'resent')
+                                                    <span class="badge bg-warning">
+                                                        {{ ucfirst($invitation->status) }}
+                                                    </span>
+                                                @elseif($invitation->status === 'accepted')
+                                                    <span class="badge bg-success">Accepted</span>
+                                                @elseif($invitation->status === 'expired')
+                                                    <span class="badge bg-danger">Expired</span>
                                                 @endif
                                             </td>
                                             <td>{{ $invitation->created_at->format('M d, Y') }}</td>

@@ -89,8 +89,8 @@ class AdminController extends Controller
             });
 
             $message = 'Invitation sent successfully to ' . $request->teacher_email;
-        } catch (\Exception $e) {
-            $message = 'Invitation created but email failed. Share this link manually: ' . route('teacher.accept', $invitationToken);
+        } catch (\Throwable $e) {
+            dd($e->getMessage()) . route('teacher.accept', $invitationToken);
         }
 
         return redirect()->route('admin.invite.teacher')
@@ -123,6 +123,7 @@ class AdminController extends Controller
 
         // Try to send email
         try {
+            \Log::info('Sending invitation email to ' . $request->teacher_email);
             Mail::send('emails.teacher-invitation', [
                 'full_name' => $invitation->teacher_full_name,
                 'username' => $invitation->teacher_username,

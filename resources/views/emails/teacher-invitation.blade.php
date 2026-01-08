@@ -93,17 +93,17 @@
                 </div>
 
                 <div class="credentials-item">
-                    <div class="credentials-label">Temporary Password:</div>
-                    <div class="credentials-value">{{ $password }}</div>
+                    <div class="credentials-label">Password:</div>
+                    <div class="credentials-value">[You will set this upon accepting the invitation]</div>
                 </div>
             </div>
 
             <div class="warning">
-                <strong>⚠️ Important:</strong> This is a temporary password. You will be required to change it when you first log in.
+                <strong>⚠️ Important:</strong> Your password IS NOT set. You will be required to set it when you first log in.
             </div>
 
             <center>
-                <a href="{{ route('teacher.accept', $invitation_token) }}" class="button">Accept Invitation & Set Password</a>
+                <a href="{{ route('teacher.accept', $invitation_token) }}" class="button" style="color: khaki;">Accept Invitation & Set Password</a>
             </center>
 
             <p style="margin-top: 30px; font-size: 14px; color: #6c757d;">
