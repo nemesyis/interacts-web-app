@@ -77,6 +77,9 @@ Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')
     // Quizzes
     Route::get('/appointments/{id}/quiz', [TeacherController::class, 'createQuiz'])->name('quiz.create');
     Route::post('/appointments/{id}/quiz', [TeacherController::class, 'storeQuiz'])->name('quiz.store');
+    Route::get('/quiz/{id}/edit', [TeacherController::class, 'editQuiz'])->name('quiz.edit');
+    Route::put('/quiz/{id}', [TeacherController::class, 'updateQuiz'])->name('quiz.update');
+    Route::delete('/quiz/{id}', [TeacherController::class, 'deleteQuiz'])->name('quiz.delete');
     
     // Reports
     Route::get('/appointments/{id}/report', [TeacherController::class, 'viewReport'])->name('report.view');
