@@ -126,4 +126,40 @@ class LoginController extends Controller
 
         return redirect('/');
     }
+
+    /**
+     * Show password change form
+     */
+    public function showChangePasswordForm()
+    {
+        return view('auth.passwords.change');
+    }
+
+    /**
+     * Handle password change
+     */
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|string|min:8|confirmed',
+        ], [
+            'new_password.confirmed' => 'The password confirmation does not match.',
+        ]);
+
+        $user = auth()->user();
+
+        // Check if current password is correct
+        if (!Hash::check($request->current_password, $user->password_hash)) {
+            return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+        }
+
+        // Update password
+        $user->update([
+            'password_hash' => Hash::make($request->new_password),
+            'must_change_password' => false,
+        ]);
+
+        return redirect()->back()->with('success', 'Password changed successfully!');
+    }
 }
