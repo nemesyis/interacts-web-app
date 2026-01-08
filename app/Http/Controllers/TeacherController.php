@@ -300,6 +300,90 @@ class TeacherController extends Controller
             ->with('success', 'Quiz created successfully with ' . count($request->questions) . ' questions!');
     }
 
+     /**
+     * Show edit quiz form
+     */
+    public function editQuiz($id)
+    {
+        $quiz = Quiz::with(['appointment.classroom', 'questions'])
+            ->whereHas('appointment.classroom', function($query) {
+                $query->where('teacher_id', auth()->id());
+            })
+            ->findOrFail($id);
+
+        return view('teacher.quiz.edit', compact('quiz'));
+    }
+
+    /**
+     * Update quiz
+     */
+    public function updateQuiz(Request $request, $id)
+    {
+        $quiz = Quiz::with('appointment')
+            ->whereHas('appointment.classroom', function($query) {
+                $query->where('teacher_id', auth()->id());
+            })
+            ->findOrFail($id);
+
+        $request->validate([
+            'quiz_title' => 'required|string|max:200',
+            'description' => 'nullable|string',
+            'time_limit_minutes' => 'nullable|integer|min:1|max:180',
+            'passing_score' => 'nullable|numeric|min:0',
+            'questions' => 'required|array|min:1',
+            'questions.*.type' => 'required|in:multiple_choice,true_false,short_answer',
+            'questions.*.text' => 'required|string',
+            'questions.*.points' => 'required|numeric|min:0.01',
+            'questions.*.answer' => 'required|string',
+            'questions.*.options' => 'nullable|array',
+        ]);
+
+        // Update quiz settings
+        $quiz->update([
+            'quiz_title' => $request->quiz_title,
+            'description' => $request->description,
+            'time_limit_minutes' => $request->time_limit_minutes,
+            'passing_score' => $request->passing_score,
+        ]);
+
+        // Delete old questions
+        $quiz->questions()->delete();
+
+        // Create new questions
+        foreach ($request->questions as $index => $questionData) {
+            QuizQuestion::create([
+                'quiz_id' => $quiz->quiz_id,
+                'question_text' => $questionData['text'],
+                'question_type' => $questionData['type'],
+                'points' => $questionData['points'],
+                'correct_answer' => $questionData['answer'],
+                'options' => $questionData['type'] === 'multiple_choice' ? $questionData['options'] : null,
+                'order_number' => $index + 1,
+            ]);
+        }
+
+        return redirect()->route('teacher.appointments', $quiz->appointment->classroom_id)
+            ->with('success', 'Quiz updated successfully!');
+    }
+
+    /**
+     * Delete quiz
+     */
+    public function deleteQuiz($id)
+    {
+        $quiz = Quiz::with('appointment')
+            ->whereHas('appointment.classroom', function($query) {
+                $query->where('teacher_id', auth()->id());
+            })
+            ->findOrFail($id);
+
+        $classroomId = $quiz->appointment->classroom_id;
+        $quiz->delete();
+
+        return redirect()->route('teacher.appointments', $classroomId)
+            ->with('success', 'Quiz deleted successfully!');
+    }
+
     /**
      * View report for appointment
      */
@@ -379,7 +463,7 @@ class TeacherController extends Controller
     }
 
     /**
-     * FIXXED Dashboard middleware to share classrooms
+     * FIXED Dashboard middleware to share classrooms
      */
     public function __construct()
     {
