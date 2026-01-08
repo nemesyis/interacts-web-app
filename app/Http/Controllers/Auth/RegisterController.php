@@ -8,6 +8,8 @@ use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use App\Models\TeacherInvitation;
+use Carbon\Carbon;
 
 class RegisterController extends Controller
 {
@@ -73,5 +75,76 @@ class RegisterController extends Controller
         $this->guard()->login($user);
 
         return redirect($this->redirectTo)->with('success', 'Registration successful! Welcome to Interacts.');
+    }
+
+    /**
+     * Show teacher invitation acceptance page
+     */
+    public function showAcceptInvitation($token)
+    {
+        $invitation = TeacherInvitation::where('invitation_token', $token)
+            ->where('status', '!=', 'accepted')
+            ->firstOrFail();
+
+        // Check if expired
+        if ($invitation->expires_at->isPast()) {
+            $invitation->update(['status' => 'expired']);
+            return redirect()->route('login')->with('error', 'This invitation has expired. Please contact the administrator.');
+        }
+
+        return view('auth.teacher-accept', compact('invitation'));
+    }
+
+    /**
+     * Accept teacher invitation and create account
+     */
+    public function acceptInvitation(Request $request, $token)
+    {
+        $invitation = TeacherInvitation::where('invitation_token', $token)
+            ->where('status', '!=', 'accepted')
+            ->firstOrFail();
+
+        // Check if expired
+        if ($invitation->expires_at->isPast()) {
+            $invitation->update(['status' => 'expired']);
+            return redirect()->route('login')->with('error', 'This invitation has expired.');
+        }
+
+        // Validate password
+        $request->validate([
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        // Check if user already exists with this email/username
+        $existingUser = User::where('email', $invitation->teacher_email)
+            ->orWhere('username', $invitation->teacher_username)
+            ->first();
+
+        if ($existingUser) {
+            return back()->withErrors(['email' => 'A user with this email or username already exists.']);
+        }
+
+        // Create teacher account
+        $teacher = User::create([
+            'email' => $invitation->teacher_email,
+            'username' => $invitation->teacher_username,
+            'password_hash' => Hash::make($request->password),
+            'full_name' => $invitation->teacher_full_name,
+            'role' => 'teacher',
+            'account_status' => 'active',
+            'must_change_password' => false,
+        ]);
+
+        // Update invitation status
+        $invitation->update([
+            'status' => 'accepted',
+            'accepted_at' => now(),
+        ]);
+
+        // Auto-login the teacher
+        $this->guard()->login($teacher);
+
+        return redirect()->route('teacher.dashboard')
+            ->with('success', 'Welcome! Your account has been created successfully.');
     }
 }

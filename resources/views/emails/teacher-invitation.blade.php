@@ -103,15 +103,14 @@
             </div>
 
             <center>
-                <a href="{{ $login_url }}" class="button">Login to Your Account</a>
+                <a href="{{ route('teacher.accept', $invitation_token) }}" class="button">Accept Invitation & Set Password</a>
             </center>
 
             <p style="margin-top: 30px; font-size: 14px; color: #6c757d;">
                 <strong>Getting Started:</strong><br>
-                1. Click the login button above<br>
-                2. Enter your username and temporary password<br>
-                3. Change your password when prompted<br>
-                4. Start creating classrooms and appointments!
+                1. Click the button above<br>
+                2. Set your own password<br>
+                3. Start creating classrooms and appointments!
             </p>
 
             <p>If you have any questions or need assistance, please contact the administrator.</p>

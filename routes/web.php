@@ -17,6 +17,10 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+//Teacher Invitation Acceptance (public)
+Route::get('/teacher/accept/{token}', [App\Http\Controllers\Auth\RegisterController::class, 'showAcceptInvitation'])->name('teacher.accept');
+Route::post('/teacher/accept/{token}', [App\Http\Controllers\Auth\RegisterController::class, 'acceptInvitation'])->name('teacher.accept.submit');
+
 // Authentication Routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);

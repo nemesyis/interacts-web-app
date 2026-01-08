@@ -59,56 +59,43 @@ class AdminController extends Controller
             'teacher_email' => 'required|email|unique:tb_user,email|unique:tb_teacher_invitation,teacher_email',
             'teacher_full_name' => 'required|string|max:200',
             'teacher_username' => 'required|string|max:100|unique:tb_user,username|unique:tb_teacher_invitation,teacher_username|alpha_dash',
-        ], [
-            'teacher_email.unique' => 'This email is already registered or has a pending invitation.',
-            'teacher_username.unique' => 'This username is already taken or has a pending invitation.',
-            'teacher_username.alpha_dash' => 'Username can only contain letters, numbers, dashes and underscores.',
         ]);
 
-        // Generate temporary password (random string)
-        $tempPassword = Str::random(12);
-        
         // Generate invitation token
         $invitationToken = Str::random(64);
 
-        // Create invitation
+        // Create invitation (NO temp password needed)
         $invitation = TeacherInvitation::create([
             'invited_by_admin_id' => auth()->id(),
             'teacher_email' => $request->teacher_email,
             'teacher_full_name' => $request->teacher_full_name,
             'teacher_username' => $request->teacher_username,
-            'temp_password_hash' => Hash::make($tempPassword),
+            'temp_password_hash' => '', // Not used anymore
             'invitation_token' => $invitationToken,
             'status' => 'pending',
             'expires_at' => Carbon::now()->addDays(7),
         ]);
 
-        // Send email (if mail is configured)
+        // Send email
         try {
             Mail::send('emails.teacher-invitation', [
                 'full_name' => $request->teacher_full_name,
                 'username' => $request->teacher_username,
-                'password' => $tempPassword,
-                'login_url' => route('login'),
+                'invitation_token' => $invitationToken,
+                'accept_url' => route('teacher.accept', $invitationToken),
             ], function ($message) use ($request) {
                 $message->to($request->teacher_email)
                     ->subject('Teacher Invitation - Interacts Platform');
             });
 
-            $message = 'Invitation sent successfully! Email has been sent to ' . $request->teacher_email;
+            $message = 'Invitation sent successfully to ' . $request->teacher_email;
         } catch (\Exception $e) {
-            // If email fails, still show the credentials
-            $message = 'Invitation created! However, email could not be sent. Please provide these credentials manually:';
-            session()->flash('temp_password', $tempPassword);
+            $message = 'Invitation created but email failed. Share this link manually: ' . route('teacher.accept', $invitationToken);
         }
 
         return redirect()->route('admin.invite.teacher')
             ->with('success', $message)
-            ->with('invitation_details', [
-                'username' => $request->teacher_username,
-                'password' => $tempPassword,
-                'email' => $request->teacher_email,
-            ]);
+            ->with('invitation_link', route('teacher.accept', $invitationToken));
     }
 
     /**
