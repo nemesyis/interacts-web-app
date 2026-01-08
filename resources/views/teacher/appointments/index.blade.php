@@ -96,7 +96,14 @@
                                     </td>
                                     <td>
                                         @if($appointment->quiz)
-                                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Created</span>
+                                            <div class="btn-group btn-group-sm">
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-check-circle"></i> Created
+                                                </span>
+                                                <a href="{{ route('teacher.quiz.edit', $appointment->quiz->quiz_id) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                            </div>
                                         @else
                                             <a href="{{ route('teacher.quiz.create', $appointment->appointment_id) }}" class="btn btn-sm btn-outline-primary">
                                                 <i class="bi bi-plus"></i> Add
