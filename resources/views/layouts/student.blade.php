@@ -64,8 +64,12 @@
                     @endif
                     
                     <hr class="text-white-50">
-                    
+
+                    <a class="nav-link" href="{{ route('password.change') }}">
+                        <i class="bi bi-key me-2"></i>Change Password
+                    </a>
                     <form method="POST" action="{{ route('logout') }}">
+                        
                         @csrf
                         <button type="submit" class="nav-link border-0 bg-transparent w-100 text-start">
                             <i class="bi bi-box-arrow-right me-2"></i>Logout
