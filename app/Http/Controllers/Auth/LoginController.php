@@ -15,7 +15,7 @@ class LoginController extends Controller
 
     public function __construct()
     {
-        $this->middleware('guest')->except('logout');
+        $this->middleware('guest')->except(['logout', 'showChangePasswordForm', 'changePassword']);
     }
 
     /**
@@ -140,6 +140,7 @@ class LoginController extends Controller
      */
     public function changePassword(Request $request)
     {
+        // Validate input
         $request->validate([
             'current_password' => 'required',
             'new_password' => 'required|string|min:8|confirmed',
@@ -151,15 +152,22 @@ class LoginController extends Controller
 
         // Check if current password is correct
         if (!Hash::check($request->current_password, $user->password_hash)) {
-            return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+            return redirect()->back()
+                ->withErrors(['current_password' => 'Current password is incorrect.'])
+                ->withInput();
         }
 
-        // Update password
-        $user->update([
-            'password_hash' => Hash::make($request->new_password),
-            'must_change_password' => false,
-        ]);
+        // Update password - IMPORTANT: Use direct assignment and save()
+        $user->password_hash = Hash::make($request->new_password);
+        $user->must_change_password = false;
+        $user->save();
 
-        return redirect()->back()->with('success', 'Password changed successfully!');
+        // Force logout after password change
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login')
+            ->with('success', 'Password changed successfully! Please login with your new password.');
     }
 }

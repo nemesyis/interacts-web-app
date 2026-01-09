@@ -16,19 +16,6 @@
                         <h4 class="mb-0">Change Password</h4>
                     </div>
                     <div class="card-body">
-                        @if(auth()->user()->must_change_password)
-                            <div class="alert alert-warning">
-                                <i class="bi bi-exclamation-triangle me-2"></i>
-                                <strong>Password Change Required:</strong> You must change your temporary password before continuing.
-                            </div>
-                        @endif
-
-                        @if(session('success'))
-                            <div class="alert alert-success">
-                                <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
-                            </div>
-                        @endif
-
                         <form method="POST" action="{{ route('password.change.submit') }}">
                             @csrf
 

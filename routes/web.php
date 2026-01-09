@@ -14,6 +14,10 @@ use App\Http\Controllers\StudentController;
 */
 
 Route::get('/', function () {
+    // Redirect logged-in users to their dashboard
+    if (auth()->check()) {
+        return redirect()->route(auth()->user()->role . '.dashboard');
+    }
     return view('welcome');
 })->name('home');
 
@@ -134,6 +138,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/password/change', function () {
         return view('auth.passwords.change');
     })->name('password.change');
-    
-    Route::post('/password/change', [LoginController::class, 'changePassword'])->name('password.change.submit');
+
+    Route::post('/password/change', [LoginController::class, 'changePassword'])
+        ->name('password.change.submit');
 });
