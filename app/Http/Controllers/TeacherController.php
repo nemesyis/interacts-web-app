@@ -249,7 +249,7 @@ class TeacherController extends Controller
     }
 
     /**
-     * Store quiz (we'll implement this fully later with questions)
+     * Store quiz
      */
     public function storeQuiz(Request $request, $id)
     {
@@ -382,6 +382,74 @@ class TeacherController extends Controller
 
         return redirect()->route('teacher.appointments', $classroomId)
             ->with('success', 'Quiz deleted successfully!');
+    }
+
+    /**
+     * Show projects for an appointment
+     */
+    public function projects($id)
+    {
+        $appointment = Appointment::whereHas('classroom', function($query) {
+            $query->where('teacher_id', auth()->id());
+        })->with('classroom')->findOrFail($id);
+
+        $projects = Project::where('appointment_id', $id)
+        ->withCount('submissions')
+        ->orderBy('created_at')
+        ->get();
+
+        return view('teacher.projects.index', compact('appointment', 'projects'));
+    }
+
+    /**
+     * Store new project
+     */
+    public function storeProject(Request $request, $id)
+    {
+        $appointment = Appointment::whereHas('classroom', function($query) {
+            $query->where('teacher_id', auth()->id());
+        })->findOrFail($id);
+
+        $request->validate([
+            'project_title' => 'required|string|max:200',
+            'description' => 'nullable|string',
+            'due_date' => 'nullable|date',
+        ]);
+
+        Project::create([
+            'appointment_id' => $id,
+            'project_title' => $request->project_title,
+            'description' => $request->description,
+            'due_date' => $request->due_date,
+            'is_active' => true,
+        ]);
+
+        return redirect()->route('teacher.projects', $id)
+            ->with('success', 'Project created successfully!');
+    }
+
+    /**
+     * Delete project
+     */
+    public function deleteProject($id)
+    {
+        $project = Project::whereHas('appointment.classroom', function($query) {
+            $query->where('teacher_id', auth()->id());
+        })->findOrFail($id);
+
+        // Delete all submission files
+        foreach ($project->submissions as $submission) {
+            $filePath = public_path($submission->file_url);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+        }
+
+        $appointmentId = $project->appointment_id;
+        $project->delete();
+
+        return redirect()->route('teacher.projects', $appointmentId)
+            ->with('success', 'Project and all submissions deleted successfully!');
     }
 
     /**

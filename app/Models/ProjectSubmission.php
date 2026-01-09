@@ -20,11 +20,20 @@ class ProjectSubmission extends Model
         'file_name',
         'file_size',
         'submission_note',
+        'submitted_at',
     ];
 
     protected $casts = [
         'submitted_at' => 'datetime',
     ];
+
+    /**
+     * Get the name of the "created at" column.
+     */
+    public function getCreatedAtColumn()
+    {
+        return 'submitted_at';
+    }
 
     /**
      * Get the project
