@@ -48,7 +48,9 @@
             border: none;
         }
         .btn-login:hover {
-            background: #f8f9fa;
+            background: #667eea;
+            color: #f8f9fa;
+            border: 2px solid white;
             transform: scale(1.05);
             box-shadow: 0 5px 20px rgba(255,255,255,0.3);
         }

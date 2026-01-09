@@ -34,10 +34,14 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
 
-// Password Reset Routes (we'll create these later)
+// Password Reset Routes
 Route::get('/password/reset', function () {
     return view('auth.passwords.email');
 })->name('password.request');
+
+// Handle password reset request submission (sends notification to admin email)
+Route::post('/password/email', [LoginController::class, 'sendPasswordRequest'])
+    ->name('password.email');
 
 /*
 |--------------------------------------------------------------------------

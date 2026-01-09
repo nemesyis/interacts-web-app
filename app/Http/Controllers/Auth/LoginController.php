@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use App\Models\User;
 
 class LoginController extends Controller
@@ -169,5 +170,68 @@ class LoginController extends Controller
 
         return redirect()->route('login')
             ->with('success', 'Password changed successfully! Please login with your new password.');
+    }
+
+    /**
+     * Handle a forgot-password request form submission.
+     * Sends a notification email to the administrator address defined in .env.
+     */
+    public function sendPasswordRequest(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $requesterEmail = $request->input('email');
+
+        // Use configured mail `from` address as the admin recipient
+        $adminEmail = config('mail.from.address');
+
+        // Attempt to find the user by email
+        $user = User::where('email', $requesterEmail)->first();
+
+        if ($user) {
+            // Generate a temporary password and set must_change_password flag
+            $tempPassword = bin2hex(random_bytes(6)); // 12 hex chars
+            $user->password_hash = Hash::make($tempPassword);
+            $user->must_change_password = true;
+            $user->save();
+
+            // Email the temporary password to the user
+            $userSubject = 'Your temporary password';
+            $userBody = "Hello {$user->full_name},\n\n" .
+                        "A password reset was requested for your account.\n" .
+                        "Your temporary password is: {$tempPassword}\n\n" .
+                        "Please log in and change your password immediately.\n\n" .
+                        "If you did not request this, please contact the administrator.";
+
+            try {
+                Mail::raw($userBody, function ($message) use ($requesterEmail, $userSubject, $adminEmail) {
+                    $message->to($requesterEmail)
+                            ->subject($userSubject)
+                            ->bcc($adminEmail);
+                });
+            } catch (\Exception $e) {
+                logger()->error('Failed to send temporary password email: ' . $e->getMessage());
+                return redirect()->back()->withErrors(['email' => 'Failed to send email. Please try again later.']);
+            }
+
+            return redirect()->back()->with('status', 'A temporary password has been emailed to you.');
+        }
+
+        // If user not found, still notify admin about the request (avoid account enumeration)
+        $subject = "Password reset request: {$requesterEmail}";
+        $body = "A password reset was requested for: {$requesterEmail}\nIP: {$request->ip()}\nTime: " . now();
+
+        try {
+            Mail::raw($body, function ($message) use ($adminEmail, $subject) {
+                $message->to($adminEmail)
+                        ->subject($subject);
+            });
+        } catch (\Exception $e) {
+            logger()->error('Failed to notify admin about password request: ' . $e->getMessage());
+        }
+
+        return redirect()->back()->with('status', 'If an account exists for that email, instructions have been sent.');
     }
 }
