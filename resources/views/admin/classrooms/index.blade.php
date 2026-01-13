@@ -16,6 +16,37 @@
         </div>
     </div>
 
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('admin.classrooms') }}" class="d-flex gap-2">
+                <div class="flex-grow-1">
+                    <input 
+                        type="text" 
+                        name="search" 
+                        class="form-control" 
+                        placeholder="Search by classroom name, teacher name, or student name..."
+                        value="{{ $search ?? '' }}"
+                    >
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search me-2"></i>Search
+                </button>
+                @if($search)
+                    <a href="{{ route('admin.classrooms') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle me-2"></i>Clear
+                    </a>
+                @endif
+            </form>
+        </div>
+    </div>
+
+    @if($search)
+        <div class="alert alert-info mb-4">
+            <i class="bi bi-info-circle me-2"></i>
+            Search results for: <strong>{{ $search }}</strong>
+        </div>
+    @endif
+
     <div class="card border-0 shadow-sm">
         <div class="card-body">
             @if($classrooms->count() > 0)
@@ -83,11 +114,19 @@
             @else
                 <div class="text-center py-5">
                     <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
-                    <h5 class="text-muted">No Classrooms Yet</h5>
-                    <p class="text-muted mb-4">Create your first classroom to get started</p>
-                    <a href="{{ route('admin.classrooms.create') }}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle me-2"></i>Create Classroom
-                    </a>
+                    @if($search)
+                        <h5 class="text-muted">No Classrooms Found</h5>
+                        <p class="text-muted mb-4">No classrooms match your search criteria. Try a different search term.</p>
+                        <a href="{{ route('admin.classrooms') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-x-circle me-2"></i>Clear Search
+                        </a>
+                    @else
+                        <h5 class="text-muted">No Classrooms Yet</h5>
+                        <p class="text-muted mb-4">Create your first classroom to get started</p>
+                        <a href="{{ route('admin.classrooms.create') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>Create Classroom
+                        </a>
+                    @endif
                 </div>
             @endif
         </div>

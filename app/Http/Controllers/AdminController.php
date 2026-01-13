@@ -152,13 +152,30 @@ class AdminController extends Controller
     /**
      * Show all classrooms
      */
-    public function classrooms()
+    public function classrooms(Request $request)
     {
+        $search = $request->input('search');
+        
         $classrooms = Classroom::with(['teacher', 'admin', 'enrollments'])
+            ->when($search, function ($query) use ($search) {
+                $query->where('classroom_name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('teacher', function ($q) use ($search) {
+                        $q->where('full_name', 'like', "%{$search}%")
+                            ->orWhere('username', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('enrollments.student', function ($q) use ($search) {
+                        $q->where('full_name', 'like', "%{$search}%")
+                            ->orWhere('username', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    });
+            })
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->appends($request->query());
 
-        return view('admin.classrooms.index', compact('classrooms'));
+        return view('admin.classrooms.index', compact('classrooms', 'search'));
     }
 
     /**
