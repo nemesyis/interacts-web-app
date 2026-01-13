@@ -334,7 +334,7 @@ class TeacherController extends Controller
             'questions.*.type' => 'required|in:multiple_choice,true_false,short_answer',
             'questions.*.text' => 'required|string',
             'questions.*.points' => 'required|numeric|min:0.01',
-            'questions.*.answer' => 'required|string',
+            'questions.*.answer' => 'nullable|string',
             'questions.*.options' => 'nullable|array',
         ]);
 
@@ -356,10 +356,17 @@ class TeacherController extends Controller
                 'question_text' => $questionData['text'],
                 'question_type' => $questionData['type'],
                 'points' => $questionData['points'],
-                'correct_answer' => $questionData['answer'],
+                'correct_answer' => $questionData['answer'] ?? '',
                 'options' => $questionData['type'] === 'multiple_choice' ? $questionData['options'] : null,
                 'order_number' => $index + 1,
             ]);
+        }
+
+        // Prevent silent corruption
+        foreach ($request->questions as $index => $questionData) {
+            if (!isset($questionData['answer'])) {
+                throw new \Exception("Missing answer for question ".($index+1));
+            }
         }
 
         return redirect()->route('teacher.appointments', $quiz->appointment->classroom_id)

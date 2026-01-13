@@ -163,7 +163,7 @@ function addQuestion(existingData = null) {
             <div class="card-body">
                 <div class="mb-3">
                     <label class="form-label">Question Type <span class="text-danger">*</span></label>
-                    <select class="form-select" name="questions[${questionCount}][type]" onchange="updateQuestionType(${questionCount}, this.value)" required>
+                    <select class="form-select" name="questions[${questionCount}][type]" data-qid="${questionCount}" required>
                         <option value="">Select type...</option>
                         <option value="multiple_choice" ${existingData && existingData.question_type === 'multiple_choice' ? 'selected' : ''}>Multiple Choice</option>
                         <option value="true_false" ${existingData && existingData.question_type === 'true_false' ? 'selected' : ''}>True/False</option>
@@ -188,12 +188,12 @@ function addQuestion(existingData = null) {
     `;
 
     container.insertAdjacentHTML('beforeend', questionHtml);
+    const select = document.querySelector(`#question-${questionCount} select`);
+    updateQuestionType(questionCount, select.value, existingData);
 
     // If existing data, populate fields
     if (existingData) {
-        setTimeout(() => {
-            updateQuestionType(questionCount, existingData.question_type, existingData);
-        }, 10);
+    updateQuestionType(questionCount, existingData.question_type, existingData);
     }
 }
 
