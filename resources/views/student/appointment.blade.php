@@ -279,9 +279,6 @@
                 <div class="card-body">
                     <h6 class="card-title">Teacher</h6>
                     <p class="mb-1"><strong>{{ $appointment->classroom->teacher->full_name }}</strong></p>
-                    <a href="mailto:{{ $appointment->classroom->teacher->email }}" class="btn btn-sm btn-outline-primary w-100">
-                        <i class="bi bi-envelope"></i> Email Teacher
-                    </a>
                 </div>
             </div>
         </div>

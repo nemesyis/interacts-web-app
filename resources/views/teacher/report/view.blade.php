@@ -148,7 +148,6 @@
                                         <th>Quiz Score</th>
                                         <th>Project Submitted</th>
                                         <th>Attendance</th>
-                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -200,11 +199,6 @@
                                                 @else
                                                     <span class="badge bg-secondary">Absent</span>
                                                 @endif
-                                            </td>
-                                            <td>
-                                                <a href="mailto:{{ $student->email }}" class="btn btn-sm btn-outline-primary" title="Email Student">
-                                                    <i class="bi bi-envelope"></i>
-                                                </a>
                                             </td>
                                         </tr>
                                     @endforeach
